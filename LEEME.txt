@@ -1,0 +1,6 @@
+1. Crea un repositorio nuevo en github.com (puede ser privado).
+2. Sube TODO el contenido de esta carpeta (incluida la carpeta oculta .github).
+3. Pestana Actions > "Build APK": espera unos 5 minutos.
+4. Abre la ejecucion terminada y descarga "AgendaTrabajos-apk" (al final de la pagina).
+5. Descomprime e instala app-debug.apk (permite "instalar apps desconocidas").
+6. En la app: ⚙️ > pega tu clave gratuita de Google Gemini (aistudio.google.com/apikey) para activar la IA.

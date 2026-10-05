@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Agenda Trabajos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ea580c">
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--tx:#1c1b19;--mu:#6b675f;--ac:#ea580c;--ok:#16a34a;--bd:#e4e1da;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161513;--card:#222120;--tx:#f1efe9;--mu:#a09b90;--bd:#363431}}
+:root[data-theme="dark"]{--bg:#161513;--card:#222120;--tx:#f1efe9;--mu:#a09b90;--bd:#363431}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px system-ui,sans-serif;max-width:640px;margin:auto;padding:12px 12px 90px}
+h1{font-size:20px;margin:6px 0 10px}
+.aviso{background:#fed7aa;color:#7c2d12;padding:10px 12px;border-radius:10px;margin-bottom:10px;font-weight:600;cursor:pointer}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font:inherit;margin-bottom:8px}
+textarea{resize:none;overflow:hidden}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{flex:1;padding:9px;border-radius:20px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit}
+.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.day{font-size:13px;color:var(--mu);text-transform:uppercase;margin:14px 2px 6px;font-weight:700}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:8px}
+.card.done{opacity:.65}.row{margin:3px 0;word-break:break-word}.mu{color:var(--mu)}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.b{padding:9px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;text-decoration:none;cursor:pointer}
+.b.p{background:var(--ac);color:#fff;border-color:var(--ac)}.b.g{background:#25d366;color:#fff;border-color:#25d366}.b.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.ph{display:flex;gap:6px;overflow-x:auto;margin-top:8px}
+.ph div{position:relative;flex:none}.ph img{height:80px;border-radius:8px;display:block}
+.ph span{position:absolute;bottom:2px;left:2px;background:#000a;color:#fff;font-size:10px;padding:1px 5px;border-radius:6px}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;background:var(--ac);color:#fff;font-size:30px;border:0;box-shadow:0 4px 14px #0005}
+#f{display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 40px;z-index:9}
+#f .in{max-width:640px;margin:auto}label{font-size:13px;color:var(--mu)}
+.empty{text-align:center;color:var(--mu);margin:40px 0}
+</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:center"><h1>🧰 Agenda Trabajos</h1><button class="b" onclick="$('#s').style.display='block';$('#key').value=localStorage.getItem('akey')||''">⚙️</button></div>
+<div class="tabs" id="nav"><button data-v="j" class="on">🧰 Trabajos</button><button data-v="m">🧱 Materiales</button></div>
+<div id="av"></div>
+<input id="q" placeholder="🔍 Buscar cliente, dirección, avería…">
+<div class="tabs" id="fl"><button data-f="t" class="on">Todos</button><button data-f="p">⏳ Pendientes</button><button data-f="h">✓ Hechos</button></div>
+<div id="list"></div>
+<div id="mv" style="display:none">
+<div class="btns" style="margin:0 0 10px"><button class="b p" onclick="$('#mcam').click()">📷 Foto de material (IA)</button><button class="b" onclick="$('#mgl').click()">🖼️ Galería (IA)</button></div>
+<div id="mst" class="mu" style="margin-bottom:6px"></div>
+<label>Asignar a</label><select id="mj"></select>
+<div style="display:flex;gap:6px"><input id="mn" placeholder="Añadir material a mano"><input id="mq" placeholder="Cant." inputmode="numeric" style="width:80px"><button class="b p" style="height:42px" onclick="addM()">＋</button></div>
+<div id="ml"></div></div>
+<button class="fab" onclick="abrir()">＋</button>
+
+<div id="f"><div class="in">
+<h1 id="ft">Nuevo trabajo</h1>
+<label>📋 Pegar mensaje de WhatsApp</label>
+<textarea id="paste" rows="3" placeholder="Pega aquí el mensaje y pulsa Reconocer"></textarea>
+<button class="b p" style="width:100%;margin-bottom:12px" onclick="reconocer()">🤖 Reconocer datos</button>
+<label>👤 Cliente</label><textarea id="cl" rows="1"></textarea>
+<label>📞 Teléfono</label><input id="tel" type="tel">
+<label>📍 Dirección</label><textarea id="di" rows="1"></textarea>
+<label>🔧 Trabajo / avería</label><textarea id="tr" rows="2"></textarea>
+<label>📅 Fecha y hora</label>
+<div style="display:flex;gap:8px"><input id="fe" type="date"><input id="ho" type="time"></div>
+<div class="btns" style="margin-bottom:14px">
+<button class="b p" onclick="guardar()">💾 Guardar</button><button class="b" onclick="cerrar()">Cancelar</button></div>
+</div></div>
+
+<div id="s" style="display:none;position:fixed;inset:0;background:var(--bg);overflow:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 40px;z-index:10"><div style="max-width:640px;margin:auto">
+<h1>🔑 IA gratuita (Google Gemini)</h1>
+<label>Clave gratuita de Google Gemini (aistudio.google.com/apikey)</label>
+<input id="key" type="password" placeholder="AIza...">
+<button class="b p" style="width:100%;margin-bottom:18px" onclick="localStorage.setItem('akey',$('#key').value.trim());alert('Clave guardada')">Guardar clave</button>
+<h1>💾 Copia de seguridad</h1>
+<p class="mu">Guarda todos tus trabajos y fotos en un archivo, y recupéralos si cambias de móvil o borras datos.</p>
+<button class="b p" style="width:100%;margin-bottom:8px" onclick="exportar()">Exportar copia</button>
+<button class="b" style="width:100%;margin-bottom:8px" onclick="$('#imp').click()">Importar copia</button>
+<input id="imp" type="file" accept="*/*" hidden>
+<button class="b" style="width:100%" onclick="$('#s').style.display='none'">Cerrar</button>
+</div></div>
+<div id="dg" style="display:none;position:fixed;inset:0;background:#0008;z-index:50;align-items:center;justify-content:center;padding:20px"><div class="card" style="width:100%;max-width:340px"><div id="dgm" style="margin-bottom:10px"></div><select id="dgs" style="display:none"></select><div class="btns" style="justify-content:flex-end"><button class="b" id="dgn">Cancelar</button><button class="b p" id="dgy">Aceptar</button></div></div></div>
+<input id="mcam" type="file" accept="image/*" capture="environment" hidden><input id="mgl" type="file" accept="image/*" multiple hidden>
+<input id="cam" type="file" accept="image/*" capture="environment" hidden>
+<input id="gal" type="file" accept="image/*" multiple hidden>
+<script>
+const $=s=>document.querySelector(s);
+let M=[],J=[],filtro='t',edit=null,fotoId=null;
+try{J=JSON.parse(localStorage.getItem('jobs')||'[]')}catch(e){}
+try{M=JSON.parse(localStorage.getItem('mats')||'[]')}catch(e){}
+function save(){try{localStorage.setItem('jobs',JSON.stringify(J));localStorage.setItem('mats',JSON.stringify(M))}catch(e){alert('Sin espacio para guardar. Borra fotos antiguas.')}}
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function fmtDia(f){if(!f)return'Sin fecha';const h=new Date(),m=new Date();m.setDate(h.getDate()+1);
+ if(f===iso(h))return'Hoy';if(f===iso(m))return'Mañana';
+ return new Date(f+'T00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}
+function wa(t){let n=(t||'').replace(/\D/g,'');if(n.length===9)n='34'+n;return'https://wa.me/'+n}
+function render(){
+ const m=new Date();m.setDate(m.getDate()+1);
+ const nm=J.filter(j=>j.fecha===iso(m)&&!j.hecho).length;
+ $('#av').innerHTML=nm?`<div class="aviso" onclick="$('#q').value='';filtro='p';tabs();render()">🟠 AVISO: mañana tienes ${nm} trabajo${nm>1?'s':''} programado${nm>1?'s':''}</div>`:'';
+ const q=$('#q').value.toLowerCase();
+ let L=J.filter(j=>(filtro==='t'||(filtro==='p')!==j.hecho)&&(!q||[j.cl,j.di,j.tr,j.tel].join(' ').toLowerCase().includes(q)));
+ L.sort((a,b)=>((a.fecha||'9999')+(a.hora||'')).localeCompare((b.fecha||'9999')+(b.hora||'')));
+ if(!L.length){$('#list').innerHTML='<div class="empty">No hay trabajos. Pulsa ＋ para añadir.</div>';return}
+ let h='',dia=null;
+ for(const j of L){
+  if(j.fecha!==dia){dia=j.fecha;h+=`<div class="day">${fmtDia(dia)}</div>`}
+  h+=`<div class="card ${j.hecho?'done':''}">
+  <div class="row"><b>👤 ${esc(j.cl)||'Sin nombre'}</b> <span class="mu">${j.hora?'· '+j.hora:''}</span></div>
+  ${j.tel?`<div class="row">📞 <a href="tel:${esc(j.tel)}">${esc(j.tel)}</a></div>`:''}
+  ${j.di?`<div class="row">📍 <a href="https://maps.google.com/?q=${encodeURIComponent(j.di)}" target="_blank">${esc(j.di)}</a></div>`:''}
+  <div class="row">🔧 ${esc(j.tr)}</div>
+  <div class="row">${j.hecho?'✓ Hecho':'⏳ Pendiente'}</div>
+  ${j.fotos&&j.fotos.length?`<div class="ph">${j.fotos.map((f,i)=>`<div><img src="${f.d}" onclick="verFoto('${j.id}',${i})"><span>${esc(f.t)}</span></div>`).join('')}</div>`:''}
+  <div class="btns">
+   <button class="b ${j.hecho?'':'ok'}" onclick="toggle('${j.id}')">${j.hecho?'⏳ Reabrir':'✓ Hecho'}</button>
+   ${j.tel?`<a class="b g" href="${wa(j.tel)}" target="_blank">💬 Chat</a>`:''}
+   <button class="b" onclick="foto('${j.id}','cam')">📷</button>
+   ${AI&&j.fotos&&j.fotos.length?`<button class="b" id="ai${j.id}" onclick="analizar('${j.id}')">🤖</button>`:''}
+   <button class="b" onclick="foto('${j.id}','gal')">🖼️</button>
+   <button class="b" onclick="abrir('${j.id}')">✏️</button>
+   <button class="b" onclick="borrar('${j.id}')">🗑️</button>
+  </div></div>`}
+ $('#list').innerHTML=h}
+function tabs(){document.querySelectorAll('#fl button').forEach(b=>b.classList.toggle('on',b.dataset.f===filtro))}
+document.querySelectorAll('#fl button').forEach(b=>b.onclick=()=>{filtro=b.dataset.f;tabs();render()});
+$('#q').oninput=render;
+function toggle(id){const j=J.find(x=>x.id===id);j.hecho=!j.hecho;save();render()}
+async function borrar(id){if(await dlg('¿Borrar este trabajo?')){J=J.filter(x=>x.id!==id);save();render()}}
+function grow(e){e.style.height='auto';e.style.height=e.scrollHeight+'px'}
+document.querySelectorAll('textarea').forEach(t=>t.addEventListener('input',()=>grow(t)));
+function abrir(id){edit=id||null;const j=id?J.find(x=>x.id===id):{};
+ $('#ft').textContent=id?'Editar trabajo':'Nuevo trabajo';$('#paste').value='';
+ $('#cl').value=j.cl||'';$('#tel').value=j.tel||'';$('#di').value=j.di||'';$('#tr').value=j.tr||'';
+ $('#fe').value=j.fecha||iso(new Date());$('#ho').value=j.hora||'';
+ $('#f').style.display='block';document.querySelectorAll('#f textarea').forEach(grow)}
+function cerrar(){$('#f').style.display='none'}
+function guardar(){
+ const d={cl:$('#cl').value.trim(),tel:$('#tel').value.trim(),di:$('#di').value.trim(),tr:$('#tr').value.trim(),fecha:$('#fe').value,hora:$('#ho').value};
+ if(!d.cl&&!d.tr){alert('Pon al menos cliente o trabajo');return}
+ if(edit)Object.assign(J.find(x=>x.id===edit),d);else J.push({id:'j'+Date.now(),hecho:false,fotos:[],...d});
+ save();cerrar();render()}
+function reconocer(){
+ const t=$('#paste').value;if(!t.trim())return;
+ const lines=t.split(/\n/).map(s=>s.trim()).filter(Boolean);
+ const get=re=>{for(const l of lines){const m=l.match(re);if(m)return m[1].trim()}return''};
+ let tel=(t.match(/(?:\+?34[\s.-]?)?([6789](?:[\s.-]?\d){8})/)||[])[0]||'';
+ tel=tel.replace(/[^\d+]/g,'');
+ let cl=get(/^(?:cliente|nombre|sr\.?|sra\.?)[:\s-]+(.+)/i);
+ let di=get(/^(?:direcci[oó]n|dir|domicilio)[:\s-]+(.+)/i);
+ if(!di)di=lines.find(l=>/\b(calle|c\/|avda|avenida|plaza|paseo|camino|carretera|urb)\b/i.test(l))||'';
+ let tr=get(/^(?:aver[ií]a|trabajo|problema|motivo|incidencia)[:\s-]+(.+)/i);
+ const usados=[cl,di,tr];
+ if(!cl){cl=lines.find(l=>!/\d{5,}/.test(l)&&l!==di&&l.length<40&&!/aver|trabajo/i.test(l))||''}
+ if(!tr)tr=lines.filter(l=>!usados.includes(l)&&l!==cl&&l!==di&&!l.replace(/[^\d]/g,'').match(/^\d{9,}$/)).join('. ');
+ let fecha='';const h=new Date();
+ if(/mañana/i.test(t)){h.setDate(h.getDate()+1);fecha=iso(h)}
+ else if(/\bhoy\b/i.test(t))fecha=iso(h);
+ else{const m=t.match(/\b(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{2,4}))?\b/);
+  if(m){let y=m[3]?+m[3]:h.getFullYear();if(y<100)y+=2000;fecha=y+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0')}}
+ const hm=t.match(/\b([01]?\d|2[0-3])[:h]([0-5]\d)\b/);
+ if(cl)$('#cl').value=cl;if(tel)$('#tel').value=tel;if(di)$('#di').value=di;if(tr)$('#tr').value=tr;
+ if(fecha)$('#fe').value=fecha;if(hm)$('#ho').value=hm[1].padStart(2,'0')+':'+hm[2];
+ document.querySelectorAll('#f textarea').forEach(grow)}
+function foto(id,tipo){fotoId=id;$('#'+tipo).click()}
+['cam','gal'].forEach(k=>$('#'+k).onchange=async e=>{
+ const j=J.find(x=>x.id===fotoId);if(!j)return;
+ const t=await dlg('Tipo de foto',{opts:['avería','repuesto','ticket','material','terminado']});if(t===false){e.target.value='';return}
+ j.fotos=j.fotos||[];
+ for(const f of e.target.files)j.fotos.push({t,d:await comprimir(f)});
+ e.target.value='';save();render()});
+function comprimir(f){return new Promise(r=>{const i=new Image,u=URL.createObjectURL(f);
+ i.onload=()=>{const s=Math.min(1,800/Math.max(i.width,i.height)),c=document.createElement('canvas');
+  c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);
+  URL.revokeObjectURL(u);r(c.toDataURL('image/jpeg',.6))};i.src=u})}
+async function verFoto(id,i){const j=J.find(x=>x.id===id);
+ if(await dlg('¿Borrar esta foto?')){j.fotos.splice(i,1);save();render()}}
+
+let AI=null;
+(async()=>{try{AI=window.claude?await window.claude.use('sample'):makeAI()}catch(e){}if(AI)render()})();
+const reconocerReglas=reconocer;
+reconocer=async function(){
+ const t=$('#paste').value;if(!t.trim())return;
+ if(!AI){reconocerReglas();return}
+ const btn=document.querySelector('#f .b.p');btn.textContent='🤖 Pensando…';
+ try{
+  const o=await AI.json('Extrae los datos de este mensaje de WhatsApp de un trabajo. Hoy es '+iso(new Date())+'. Responde SOLO con JSON: {"cliente":"","telefono":"","direccion":"","trabajo":"","fecha":"YYYY-MM-DD o vacío","hora":"HH:MM o vacío"}. Mensaje:\n'+t,{modelTier:'quick'});
+  if(o.cliente)$('#cl').value=o.cliente;if(o.telefono)$('#tel').value=o.telefono;
+  if(o.direccion)$('#di').value=o.direccion;if(o.trabajo)$('#tr').value=o.trabajo;
+  if(o.fecha)$('#fe').value=o.fecha;if(o.hora)$('#ho').value=o.hora;
+  document.querySelectorAll('#f textarea').forEach(grow)
+ }catch(e){reconocerReglas()}
+ btn.textContent='🤖 Reconocer datos'}
+
+function dlg(msg,o={}){return new Promise(r=>{const d=$('#dg'),sel=$('#dgs');
+ $('#dgm').textContent=msg;sel.style.display=o.opts?'block':'none';
+ if(o.opts)sel.innerHTML=o.opts.map(x=>`<option>${x}</option>`).join('');
+ $('#dgn').style.display=o.info?'none':'inline-block';d.style.display='flex';
+ $('#dgy').onclick=()=>{d.style.display='none';r(o.opts?sel.value:true)};
+ $('#dgn').onclick=()=>{d.style.display='none';r(false)}})}
+window.alert=m=>{dlg(String(m),{info:true})};
+function errIA(e){
+ if(e&&e.code==='not_granted')alert('Has rechazado el permiso de IA. Recarga la página y pulsa Permitir.');
+ else if(e&&e.code==='noimg')alert('Este visor no permite enviar fotos a la IA. Prueba abriendo el enlace en Chrome.');
+ else alert('Error de IA: '+((e&&e.message)||(e&&e.code)||e))}
+async function idMat(dataUrl){
+ const lim=await AI.limits().catch(()=>null);
+ if(!lim||!lim.images)throw {code:'noimg'};
+ const blob=await (await fetch(dataUrl)).blob();
+ const r=await AI('Identifica los materiales, repuestos o piezas visibles en la foto (fontanería, electricidad, climatización, etc.). Responde SOLO con un array JSON: [{"nombre":"","cantidad":1}]. Si no hay material reconocible, [].',{images:blob,modelTier:'quick'});
+ const mm=r.text.match(/\[[\s\S]*\]/),arr=mm?JSON.parse(mm[0]):[];
+ return (Array.isArray(arr)?arr:[]).filter(x=>x&&x.nombre)}
+const nid=()=>'m'+Date.now()+Math.random().toString(36).slice(2,6);
+async function analizar(id){
+ const j=J.find(x=>x.id===id),f=j.fotos[j.fotos.length-1],b=$('#ai'+id);
+ try{b.textContent='⏳';const arr=await idMat(f.d);
+  if(!arr.length){b.textContent='🤖';alert('No he reconocido materiales en la foto');return}
+  arr.forEach(x=>M.push({id:nid(),n:x.nombre,q:x.cantidad||1,job:id,hecho:false}));
+  j.tr=(j.tr?j.tr+'\n':'')+'Materiales (IA): '+arr.map(x=>x.nombre+(x.cantidad>1?' ×'+x.cantidad:'')).join(', ');
+  save();render()
+ }catch(e){b.textContent='🤖';errIA(e)}}
+async function matFoto(files){
+ if(!AI){alert('La IA no está disponible aquí. Añade el material a mano.');return}
+ let n=0;
+ for(const f of files){
+  $('#mst').textContent='🤖 Analizando foto…';
+  try{const arr=await idMat(await comprimir(f));
+   arr.forEach(x=>M.push({id:nid(),n:x.nombre,q:x.cantidad||1,job:$('#mj').value,hecho:false}));n+=arr.length;save()
+  }catch(e){errIA(e)}}
+ $('#mst').textContent=n?'✓ '+n+' material(es) añadidos':'No se reconoció ningún material';renderM()}
+$('#mcam').onchange=e=>{const f=Array.from(e.target.files);e.target.value='';matFoto(f)};
+$('#mgl').onchange=e=>{const f=Array.from(e.target.files);e.target.value='';matFoto(f)};
+function addM(){const n=$('#mn').value.trim();if(!n)return;
+ M.push({id:nid(),n,q:$('#mq').value.trim()||1,job:$('#mj').value,hecho:false});$('#mn').value='';$('#mq').value='';save();renderM()}
+function togM(id){const m=M.find(x=>x.id===id);m.hecho=!m.hecho;save();renderM()}
+async function delM(id){if(await dlg('¿Borrar este material?')){M=M.filter(x=>x.id!==id);save();renderM()}}
+function renderM(){
+ const cur=$('#mj').value;
+ $('#mj').innerHTML='<option value="">General (sin trabajo)</option>'+J.filter(j=>!j.hecho).map(j=>`<option value="${j.id}">${esc(j.cl||'Sin nombre')} ${j.fecha||''}</option>`).join('');
+ $('#mj').value=cur;
+ if(!M.length){$('#ml').innerHTML='<div class="empty">Sin materiales. Haz una foto o añádelos a mano.</div>';return}
+ const g={};M.forEach(m=>(g[m.job||'']=g[m.job||'']||[]).push(m));let h='';
+ for(const k in g){const j=J.find(x=>x.id===k);
+  h+=`<div class="day">${k?'🧰 '+esc(j?(j.cl||'Trabajo'):'Trabajo borrado'):'📦 General'}</div>`;
+  for(const m of g[k])h+=`<div class="card ${m.hecho?'done':''}" style="display:flex;align-items:center;gap:8px;padding:8px 12px"><button class="b ${m.hecho?'ok':''}" onclick="togM('${m.id}')">${m.hecho?'✓':'○'}</button><div style="flex:1;word-break:break-word"><b>${esc(m.n)}</b> <span class="mu">× ${esc(m.q)}</span></div><button class="b" onclick="delM('${m.id}')">🗑️</button></div>`}
+ $('#ml').innerHTML=h}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+ const v=b.dataset.v;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+ ['#q','#fl','#list','#av'].forEach(t=>$(t).style.display=v==='j'?'':'none');
+ document.querySelector('.fab').style.display=v==='j'?'':'none';
+ $('#mv').style.display=v==='m'?'block':'none';if(v==='m')renderM();else render()});
+async function exportar(){
+ const name='agenda-trabajos-'+iso(new Date())+'.json',data=JSON.stringify({v:2,jobs:J,mats:M}),P=window.Capacitor&&Capacitor.Plugins;
+ try{if(P&&P.Filesystem&&P.Share){const r=await P.Filesystem.writeFile({path:name,data:data,directory:'CACHE',encoding:'utf8'});await P.Share.share({title:name,url:r.uri});return}}
+ catch(e){if(/cancel/i.test(String(e)))return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=name;a.click()}
+function makeAI(){
+ const f=async(content,o={})=>{
+  const key=localStorage.getItem('akey');
+  if(!key)throw {code:'nokey',message:'Falta la clave de API (⚙️ arriba a la derecha)'};
+  const parts=[{text:content}];
+  if(o.images){const bl=o.images;
+   const data=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.readAsDataURL(bl)});
+   parts.unshift({inline_data:{mime_type:bl.type||'image/jpeg',data}})}
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts}]})});
+  const d=await r.json();if(!r.ok)throw {code:'api',message:(d.error&&d.error.message)||String(r.status)};
+  return {text:((d.candidates&&d.candidates[0]&&d.candidates[0].content.parts)||[]).map(x=>x.text||'').join('')}};
+ f.limits=async()=>({images:{}});
+ f.json=async(p,o)=>{const r=await f(p,o),m=r.text.match(/\{[\s\S]*\}/);return JSON.parse(m[0])};
+ return f}
+$('#imp').onchange=async e=>{
+ try{const o=JSON.parse(await e.target.files[0].text());let n=0;
+  for(const j of o.jobs||[])if(!J.some(x=>x.id===j.id)){J.push(j);n++}
+  for(const m of o.mats||[])if(!M.some(x=>x.id===m.id)){M.push(m);n++}
+  save();render();alert('Importados '+n+' trabajos')}catch(x){alert('Archivo no válido')}
+ e.target.value=''};
+render();
+</script></body></html>
